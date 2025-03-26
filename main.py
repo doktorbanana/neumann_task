@@ -51,9 +51,9 @@ if __name__ == "__main__":
     config = {
         'fs': 48000,  # Sampling frequency
         'fir_taps': 255,  # Filter order
-        'regularization': 1e-2,
-        'design_method': 'firls',
-        'bandpass_type': 'butterworth',
+        'regularization': 1e-6, # Vermeidet Teilen durch Null
+        'design_method': 'firls', # Designmethode ('firls' oder 'firwin2')
+        'bandpass_type': 'butterworth', # Typ des Bandpass. 'null' für keinen Bandpass
         'lowcut': 125,    # Untere Bandpass-Grenze
         'highcut': 20000,  # Obere Bandpass-Grenze,
         'order': 4  # Ordnung des Bandpass
