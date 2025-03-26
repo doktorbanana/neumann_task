@@ -22,7 +22,7 @@ Die LSE-Methode zeigt bei Tests bessere Ergebnisse (geringere Abweichungen <1dB 
 bei akzeptablem Rechenaufwand (Offline-Berechnung).
 
 Ergebnisse:
-- Bei 511 Filterkoeffizienten (@48kHz Sampling) wird die Zielkurve im Bereich 250Hz-11kHz mit
+- Bei 511 Filterkoeffizienten (@48kHz Sampling) wird die Zielkurve im Bereich 250Hz-18kHz mit
   ±1dB-Toleranz erreicht
 - Restabweichungen:
   * Tiefen unter ~250Hz
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         'fir_taps': 255,  # Filter order
         'regularization': 1e-6, # Vermeidet Teilen durch Null
         'design_method': 'firls', # Designmethode ('firls' oder 'firwin2')
-        'bandpass_type': 'butterworth', # Typ des Bandpass. 'null' für keinen Bandpass
+        'bandpass_type': 'butterworth', # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
         'lowcut': 125,    # Untere Bandpass-Grenze
         'highcut': 20000,  # Obere Bandpass-Grenze,
         'order': 4  # Ordnung des Bandpass
