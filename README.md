@@ -15,7 +15,7 @@ Ein Python-Tool zur Korrektur des Frequenzgangs von Lautsprechern durch inverses
 ---
 
 ## Installation
-1. **Python 3.11** erforderlich
+1. **Python 3.9.6+** erforderlich
 2. **Abhängigkeiten installieren**:
    ```bash
    pip install -r requirements.txt
