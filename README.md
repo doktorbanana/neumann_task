@@ -40,7 +40,7 @@ Ein Python-Tool zur Korrektur des Frequenzgangs von Lautsprechern durch inverses
 2. Ausführung:
 
 ```bash
-python src/main.py
+python main.py
 ```
 
 3. Ergebnisse:
@@ -50,7 +50,7 @@ python src/main.py
 
 ## Ergebnis
 
-- ±1 dB Toleranz im Bereich 250 Hz – 11 kHz (bei 511 Taps)
+- ±1 dB Toleranz im Bereich ~250 Hz – 18 kHz (bei 511 Taps)
 - Limitationen:
   - Abweichungen <~250 Hz 
   - Notch bei ~11 kHz
@@ -66,4 +66,3 @@ Design-Entscheidungen:
 
 - Warped FIR für verbesserte Tiefenlinearität [(Ramos et al., 2008)](https://www.sciencedirect.com/science/article/abs/pii/S1051200408000092)
 - Psychoakustische Gewichtung der Fehlerfunktion
-
