@@ -1,7 +1,5 @@
 """
-##############################################################################
-# Frequenzganglinearisierung eines Lautsprechers mittels inversem FIR-Filter #
-##############################################################################
+Frequenzganglinearisierung eines Lautsprechers mittels inversem FIR-Filter
 
 Ansatz:
 Das Programm linearisiert den Frequenzgang eines Lautsprechers durch Design eines FIR-Filters,
