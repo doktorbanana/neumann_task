@@ -25,15 +25,16 @@ Ein Python-Tool zur Korrektur des Frequenzgangs von Lautsprechern durch inverses
 
 1. Konfiguration (in src/main.py anpassbar):
 ```bash
-config = {
-    'fs': 48000,          # Sampling-Frequenz
-    'fir_taps': 511,       # Filterlänge (empfohlen: ungerade)
-    'regularization': 1e-2, # Regularisierungsstärke
-    'design_method': 'firls', # 'firls' oder 'firwin2'
-    'bandpass_type': 'butterworth', 
-    'lowcut': 100,         # Untere Bandpass-Grenze (Hz)
-    'highcut': 20000       # Obere Bandpass-Grenze (Hz)
-}
+    config = {
+        'fs': 48000,  # Sampling frequency
+        'fir_taps': 255,  # Filter order
+        'regularization': 1e-6, # Vermeidet Teilen durch Null
+        'design_method': 'firls', # Designmethode ('firls' oder 'firwin2')
+        'bandpass_type': 'butterworth', # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
+        'lowcut': 125,    # Untere Bandpass-Grenze
+        'highcut': 20000,  # Obere Bandpass-Grenze,
+        'order': 4  # Ordnung des Bandpass
+    }
 ```
 
 2. Ausführung:
