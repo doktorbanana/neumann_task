@@ -50,7 +50,7 @@ python main.py
 
 ## Ergebnis
 
-- ±1 dB Toleranz im Bereich ~250 Hz – 18 kHz (bei 511 Taps)
+- ±1 dB Toleranz im Bereich ~250 Hz – 18 kHz (bei 255 Taps)
 - Limitationen:
   - Abweichungen <~250 Hz 
   - Notch bei ~11 kHz
