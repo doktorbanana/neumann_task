@@ -22,7 +22,7 @@ Die LSE-Methode zeigt bei Tests bessere Ergebnisse (geringere Abweichungen <1dB 
 bei akzeptablem Rechenaufwand (Offline-Berechnung).
 
 Ergebnisse:
-- Bei 511 Filterkoeffizienten (@48kHz Sampling) wird die Zielkurve im Bereich 250Hz-18kHz mit
+- Bei 255 Filterkoeffizienten (@48kHz Sampling) wird die Zielkurve im Bereich 250Hz-18kHz mit
   ±1dB-Toleranz erreicht
 - Restabweichungen:
   * Tiefen unter ~250Hz
