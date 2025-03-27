@@ -45,7 +45,7 @@ python main.py
 
 3. Ergebnisse:
 
-- **Plot**: Plot des Frequenzgangs vor/nach Equalization ```exports/511_taps_fir_result.png```
+- **Plot**: Plot des Frequenzgangs vor/nach Equalization ```exports/255taps_fir_result.png```
 - **Filterkoeffizienten**: 32bit float .wav ```exports/FIR_Linearization_Filter.wav```
 
 ## Ergebnis
