@@ -3,7 +3,7 @@ Bandpass-Komponenten - Frequenzbereichsbegrenzung
 
 Klassen:
 - IBandpassFilter: Interface für alle Bandpass-Implementierungen
-- NullBandpass: keine Frequenzbegrenzung000
+- NullBandpass: keine Frequenzbegrenzung
 - ButterworthBandpass: Butterworth-Filter mit konfigurierbarer Ordnung
 - BandpassFactory: Erzeugt Bandpass-Instanzen nach Konfiguration
 
@@ -24,11 +24,6 @@ class IBandpassFilter(ABC):
     """Abstrakte Schnittstelle für Bandpass-Filter"""
 
     @abstractmethod
-    def configure(self, **config):
-        """Konfiguriert den Bandpass mit Parametern"""
-        pass
-
-    @abstractmethod
     def get_frequency_response(self, frequencies: np.ndarray) -> np.ndarray:
         """Berechnet den Frequenzgang"""
         pass
@@ -37,7 +32,7 @@ class IBandpassFilter(ABC):
 class NullBandpass(IBandpassFilter):
     """Konkrete Implementierung für 'kein Bandpass'"""
 
-    def configure(self, **config):
+    def __init__(self):
         pass
 
     def get_frequency_response(self, frequencies: np.ndarray) -> np.ndarray:
@@ -46,11 +41,10 @@ class NullBandpass(IBandpassFilter):
 
 class ButterworthBandpass(IBandpassFilter):
     """Konkrete Butterworth-Implementierung"""
-    def __init__(self, fs):
-        self.fs = fs
-        self.sos = None
+    def __init__(self, fs: int, lowcut: int, highcut: int, order: int):
 
-    def configure(self, lowcut, highcut, fs, order=4, **_):
+        self.fs = fs
+
         if lowcut >= highcut:
             raise ValueError("Highcut frequency must be above Lowcut frequency")
 
@@ -58,7 +52,7 @@ class ButterworthBandpass(IBandpassFilter):
             N=order,
             Wn=[lowcut, highcut],
             btype='bandpass',
-            fs=fs,
+            fs=self.fs,
             output='sos')
 
     def get_frequency_response(self, frequencies: np.ndarray) -> np.ndarray:
@@ -68,6 +62,7 @@ class ButterworthBandpass(IBandpassFilter):
 
 class BandpassFactory:
     """Erzeugt den passenden Bandpass für gegebenen Typ"""
+    
     _types = {
         'null': NullBandpass,
         'butterworth': ButterworthBandpass
@@ -75,16 +70,23 @@ class BandpassFactory:
 
     @classmethod
     def get_bandpass(cls, config) -> IBandpassFilter:
+
         bandpass_type = config['bandpass_type'].lower()
         bandpass_class = cls._types.get(bandpass_type)
-
         if not bandpass_class:
             raise ValueError(f"Unsupported type: {bandpass_type}. Available: {list(cls._types.keys())}")
 
         # Instanziieren mit benötigten Parametern
-        bandpass = bandpass_class(config['fs'])
+        constructor_args = {
+            'butterworth': {
+                'fs': config['fs'],
+                'lowcut': config['lowcut'],
+                'highcut': config['highcut'],
+                'order': config.get('order', 4)
+            },
+            'null': {}
+        }
 
-        # Konfiguration mit allen relevanten Parametern
-        bandpass.configure(**config)
+        bandpass = bandpass_class(**constructor_args.get(bandpass_type, {}))
 
         return bandpass
