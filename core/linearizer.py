@@ -41,9 +41,6 @@ class Linearizer:
         if missing:
             raise ValueError(f"Missing required config keys: {missing}")
 
-        if self.config['bandpass_type'] == 'butterworth' and 'order' not in self.config:
-            raise ValueError("Butterworth filter requires 'order' parameter")
-
     def load_data(self, file_path):
         loader = DataLoaderFactory.get_loader(file_path)
         self.data = loader.load(file_path)

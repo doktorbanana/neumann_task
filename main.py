@@ -54,9 +54,10 @@ if __name__ == "__main__":
         'regularization': 1e-6, # Vermeidet Teilen durch Null
         'design_method': 'firls', # Designmethode ('firls' oder 'firwin2')
         'bandpass_type': 'butterworth', # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
-        'lowcut': 125,    # Untere Bandpass-Grenze
-        'highcut': 20000,  # Obere Bandpass-Grenze,
-        'order': 4  # Ordnung des Bandpass
+        'lowcut_freq': 125,    # Untere Bandpass-Grenze
+        'highcut_freq': 20000,  # Obere Bandpass-Grenze,
+        'lowcut_order': 4,  # Ordnung des Lowcuts (untere Flanke des Bandbass)
+        'highcut_order': 2  # Ordnung des Highcuts (obere Flanke des Bandbass)
     }
 
     linearizer = Linearizer(config)

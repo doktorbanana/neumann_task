@@ -41,24 +41,32 @@ class NullBandpass(IBandpassFilter):
 
 class ButterworthBandpass(IBandpassFilter):
     """Konkrete Butterworth-Implementierung"""
-    def __init__(self, fs: int, lowcut: int, highcut: int, order: int):
+    def __init__(self, fs: int, lowcut_freq: int, highcut_freq: int, lowcut_order: int, highcut_order: int):
 
         self.fs = fs
 
-        if lowcut >= highcut:
+        if lowcut_freq >= highcut_freq:
             raise ValueError("Highcut frequency must be above Lowcut frequency")
 
-        self.sos = butter(
-            N=order,
-            Wn=[lowcut, highcut],
-            btype='bandpass',
+        self.highcut_sos = butter(
+            N=highcut_order,
+            Wn=highcut_freq,
+            btype='lowpass',
+            fs=self.fs,
+            output='sos')
+
+        self.lowcut_sos = butter(
+            N=lowcut_order,
+            Wn=lowcut_freq,
+            btype='highpass',
             fs=self.fs,
             output='sos')
 
     def get_frequency_response(self, frequencies: np.ndarray) -> np.ndarray:
-        _, h = sosfreqz(self.sos, worN=frequencies, fs=self.fs)
-        return np.abs(h)
+        _, highcut_h = sosfreqz(self.highcut_sos, worN=frequencies, fs=self.fs)
+        _, lowcut_h = sosfreqz(self.lowcut_sos, worN=frequencies, fs=self.fs)
 
+        return np.abs(highcut_h * lowcut_h)
 
 class BandpassFactory:
     """Erzeugt den passenden Bandpass für gegebenen Typ"""
@@ -80,9 +88,10 @@ class BandpassFactory:
         constructor_args = {
             'butterworth': {
                 'fs': config['fs'],
-                'lowcut': config['lowcut'],
-                'highcut': config['highcut'],
-                'order': config.get('order', 4)
+                'lowcut_freq': config['lowcut_freq'],
+                'highcut_freq': config['highcut_freq'],
+                'lowcut_order': config.get('lowcut_order', 4),
+                'highcut_order': config.get('highcut_order', 2)
             },
             'null': {}
         }
