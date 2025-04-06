@@ -9,9 +9,13 @@ nicht verändert.
 
 Bandpass-Integration:
 Der natürliche Bandpass-Charakter des Lautsprechers wird durch Anwendung eines Butterworth-Bandpasses
-(100Hz-20kHz) auf die lineare Zielkurve berücksichtigt. Dies verhindert kritische Verstärkungen in
+(125Hz-20kHz) auf die lineare Zielkurve berücksichtigt. Dies verhindert kritische Verstärkungen in
 Frequenzbereichen außerhalb der physikalischen Betriebsgrenzen des Lautsprechers, die zu
 Signalverzerrungen oder Hardware-Schäden führen könnten.
+Eine typische Roll-Off-Rate für Lautsprecher mit Bassreflexöffnung ist 24dB/Oktave für tiefe Frequenzen.
+Das ist auch in den vorliegenden Messdaten erkennbar. Daher wurde für den Lowcut ein Filter vierter Ordnung gewählt.
+Im hochfrequenten Bereich ist der Roll-Off in der Regel flacher. Daher wurde ein Highcut-Filter
+zweiter Ordnung gewählt.
 
 Filterdesign-Methoden:
 Es wurden zwei Methoden implementiert:
@@ -33,7 +37,7 @@ Ausblick/Verbesserungspotenzial:
   bei reduzierter Filterlänge verbessern. Das könnte das Problem unter ~250Hz beheben.
   Aus Zeitgründen konnte dieser Ansatz nicht weiter verflogt werden.
 - IIR-Ansätze: Potenzial für effizientere Implementierung (geringere Koeffizientenanzahl), jedoch
-  komplexeres Design und nicht-linearer Phasenverlauf
+  komplexeres Design und nicht-linearer Phasenverlauf.
 - Erweiterungen:
   * Unit-Tests für kritische Komponenten
   * Verbesserung der Fehlerbehandlung im Code
