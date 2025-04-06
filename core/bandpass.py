@@ -88,10 +88,10 @@ class BandpassFactory:
         constructor_args = {
             'butterworth': {
                 'fs': config['fs'],
-                'lowcut_freq': config['lowcut_freq'],
-                'highcut_freq': config['highcut_freq'],
-                'lowcut_order': config.get('lowcut_order', 4),
-                'highcut_order': config.get('highcut_order', 2)
+                'lowcut_freq': config['bandpass_params']['lowcut_freq'],
+                'highcut_freq': config['bandpass_params']['highcut_freq'],
+                'lowcut_order': config['bandpass_params'].get('lowcut_order', 4),
+                'highcut_order': config['bandpass_params'].get('highcut_order', 2)
             },
             'null': {}
         }

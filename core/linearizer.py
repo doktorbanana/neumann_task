@@ -17,7 +17,7 @@ from scipy.signal import freqz
 from core.bandpass import BandpassFactory
 from core.data_handling import DataLoaderFactory
 from core.target_curves import FlatTargetCurve, TargetCurveDesigner
-from core.filter_design import InverseCurveCalculator, FilterDesignerFactory
+from core.filter_design import InverseCurveCalculator, FilterDesignerFactory, CurveSmootherFactory
 from core.visualization import ResponsePlotter
 from core.export import FilterExporter
 
@@ -28,9 +28,11 @@ class Linearizer:
     def __init__(self, config):
         self.config = config
         self.data = None
+        self.smoothed_db_values = None
         self.target_mag = None
         self.filter_coeffs = None
         self.bandpass = BandpassFactory.get_bandpass(self.config)
+        self.smoother = CurveSmootherFactory.get_smoother(self.config)
 
         self._validate_config()
 
@@ -45,15 +47,33 @@ class Linearizer:
         loader = DataLoaderFactory.get_loader(file_path)
         self.data = loader.load(file_path)
 
+    def smooth_data(self):
+        self.smoothed_db_values = self.smoother.smooth(self.data.frequencies, self.data.db_values)
+
     def design_target_curve(self):
         flat_curve = FlatTargetCurve()
         target_designer = TargetCurveDesigner(bandpass=self.bandpass, target_curve=flat_curve)
         self.target_mag = target_designer.design_curve(self.data.frequencies)
 
     def calculate_inverse_response(self):
-        return InverseCurveCalculator.compute(
-            self.data.db_values, self.target_mag, self.config['regularization']
-        )
+
+        if self.data is None:
+            ValueError("Data must be loaded first!")
+
+        if self.smoothed_db_values is not None:
+            inverse_response = InverseCurveCalculator.compute(
+                self.smoothed_db_values,
+                self.target_mag,
+                self.config['regularization']
+            )
+        else:
+            inverse_response = InverseCurveCalculator.compute(
+                self.data.db_values,
+                self.target_mag,
+                self.config['regularization']
+            )
+
+        return inverse_response
 
     def design_filter(self, inverse_response):
         designer = FilterDesignerFactory.get_designer(self.config['design_method'])
@@ -66,12 +86,18 @@ class Linearizer:
 
     def simulate_response(self):
         w, h = freqz(self.filter_coeffs, worN=self.data.frequencies, fs=self.config['fs'])
-        return 20 * np.log10(np.abs(h)) + self.data.db_values
+
+        if self.smoothed_db_values is not None:
+            result = 20 * np.log10(np.abs(h)) + self.smoothed_db_values
+        else:
+            result = 20 * np.log10(np.abs(h)) + self.data.db_values
+        return result
 
     def plot_results(self, equalized_db):
         ResponsePlotter.plot(
             self.data.frequencies,
             self.data.db_values,
+            self.smoothed_db_values,
             20 * np.log10(self.target_mag + 1e-10),
             equalized_db
         )

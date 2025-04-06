@@ -55,19 +55,28 @@ if __name__ == "__main__":
     config = {
         'fs': 48000,  # Sampling frequency
         'fir_taps': 255,  # Filter order
-        'regularization': 1e-6, # Vermeidet Teilen durch Null
-        'design_method': 'firls', # Designmethode ('firls' oder 'firwin2')
-        'bandpass_type': 'butterworth', # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
-        'lowcut_freq': 125,    # Untere Bandpass-Grenze
-        'highcut_freq': 20000,  # Obere Bandpass-Grenze,
-        'lowcut_order': 4,  # Ordnung des Lowcuts (untere Flanke des Bandbass)
-        'highcut_order': 2  # Ordnung des Highcuts (obere Flanke des Bandbass)
+        'regularization': 1e-6,  # Vermeidet Teilen durch Null
+        'design_method': 'firls',  # Designmethode ('firls' oder 'firwin2')
+        'bandpass_type': 'butterworth',  # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
+        'bandpass_params':
+            {
+                'lowcut_freq': 125,  # Untere Bandpass-Grenze
+                'highcut_freq': 20000,  # Obere Bandpass-Grenze,
+                'lowcut_order': 4,  # Ordnung des Lowcuts (untere Flanke des Bandbass)
+                'highcut_order': 2,  # Ordnung des Highcuts (obere Flanke des Bandbass)
+            },
+        'smoothing_type': 'erb',  # Art Glättung ('octave', 'erb', oder 'null' für keine Glättung)
+        'smoothing_params':
+            {
+                'fraction': 3  # 1/3 Oktavbandglättung
+            }
     }
 
     linearizer = Linearizer(config)
     linearizer.load_data('data/spectrum.json')
-    linearizer.design_target_curve()
 
+    linearizer.smooth_data()
+    linearizer.design_target_curve()
     inverse_response = linearizer.calculate_inverse_response()
     linearizer.design_filter(inverse_response)
 
