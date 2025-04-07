@@ -5,7 +5,7 @@ Funktionen:
 - Orchestriert den gesamten Equalization-Prozess
 - Koordiniert Datenfluss zwischen Komponenten
 - Implementiert die Hauptpipeline:
-  1. Daten laden
+  1. Daten laden und glätten
   2. Zielkurve generieren
   3. Inverse Filterantwort berechnen
   4. Filterkoeffizienten erzeugen
@@ -17,7 +17,8 @@ from scipy.signal import freqz
 from core.bandpass import BandpassFactory
 from core.data_handling import DataLoaderFactory
 from core.target_curves import FlatTargetCurve, TargetCurveDesigner
-from core.filter_design import InverseCurveCalculator, FilterDesignerFactory, CurveSmootherFactory
+from core.inverse_curves import CurveSmootherFactory, InverseCurveCalculatorFactory
+from core.filter_design import FilterDesignerFactory
 from core.visualization import ResponsePlotter
 from core.export import FilterExporter
 
@@ -29,15 +30,15 @@ class Linearizer:
         self.config = config
         self.data = None
         self.smoothed_db_values = None
-        self.target_mag = None
+        self.inverse_response_db = None
         self.filter_coeffs = None
         self.bandpass = BandpassFactory.get_bandpass(self.config)
         self.smoother = CurveSmootherFactory.get_smoother(self.config)
-
+        self.inverse_curve_calculator = InverseCurveCalculatorFactory.get_calculator(self.config.get('inverse_method', 'tikhonov'))
         self._validate_config()
 
     def _validate_config(self):
-        required_keys = ['fs', 'fir_taps', 'regularization', 'design_method', 'bandpass_type']
+        required_keys = ['fs', 'fir_taps', 'design_method', 'bandpass_type', 'smoothing_type', 'inverse_method']
 
         missing = [element for element in required_keys if element not in self.config]
         if missing:
@@ -61,17 +62,21 @@ class Linearizer:
             ValueError("Data must be loaded first!")
 
         if self.smoothed_db_values is not None:
-            inverse_response = InverseCurveCalculator.compute(
+            inverse_response = self.inverse_curve_calculator.compute(
+                self.data.frequencies,
                 self.smoothed_db_values,
                 self.target_mag,
-                self.config['regularization']
+                **self.config.get('inverse_params', {})
             )
         else:
-            inverse_response = InverseCurveCalculator.compute(
+            inverse_response = self.inverse_curve_calculator.compute(
+                self.data.frequencies,
                 self.data.db_values,
                 self.target_mag,
-                self.config['regularization']
+                **self.config.get('inverse_params', {})
             )
+
+        self.inverse_response_db = 20 * np.log10(inverse_response)
 
         return inverse_response
 
@@ -87,8 +92,8 @@ class Linearizer:
     def simulate_response(self):
         w, h = freqz(self.filter_coeffs, worN=self.data.frequencies, fs=self.config['fs'])
 
-        if self.smoothed_db_values is not None:
-            result = 20 * np.log10(np.abs(h)) + self.smoothed_db_values
+        if self.inverse_response_db is not None:
+            result = 20 * np.log10(np.abs(h)) - self.inverse_response_db
         else:
             result = 20 * np.log10(np.abs(h)) + self.data.db_values
         return result
@@ -98,7 +103,7 @@ class Linearizer:
             self.data.frequencies,
             self.data.db_values,
             self.smoothed_db_values,
-            20 * np.log10(self.target_mag + 1e-10),
+            self.inverse_response_db,
             equalized_db
         )
 

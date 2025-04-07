@@ -17,6 +17,11 @@ Das ist auch in den vorliegenden Messdaten erkennbar. Daher wurde für den Lowcu
 Im hochfrequenten Bereich ist der Roll-Off in der Regel flacher. Daher wurde ein Highcut-Filter
 zweiter Ordnung gewählt.
 
+Regularisierung:
+Mit der Tikhonov-Methode wird der Dämpfungsterm β·B(ω)² hinzugefügt, wobei B(ω) einem Hochpassfilter
+(8 kHz Grenzfrequenz) entspricht. Verhindert Überverstärkung im hochfrequenten Bereich.
+
+
 Filterdesign-Methoden:
 Es wurden zwei Methoden implementiert:
 1. Hamming-Fensterung: Einfache Fenstermethode zur Approximation der idealen Impulsantwort
@@ -30,7 +35,6 @@ Ergebnisse:
   ±1dB-Toleranz erreicht
 - Restabweichungen:
   * Tiefen unter ~250Hz
-  * Notch bei ~11kHz
 
 Ausblick/Verbesserungspotenzial:
 - Latenz-Reduktion: Kaskadierte warped-FIR Strukturen (Ramos et al., 2008) könnten die Linearität in den Tiefen
@@ -53,22 +57,29 @@ from core.linearizer import Linearizer
 if __name__ == "__main__":
 
     config = {
-        'fs': 48000,  # Sampling frequency
-        'fir_taps': 255,  # Filter order
-        'regularization': 1e-6,  # Vermeidet Teilen durch Null
-        'design_method': 'firls',  # Designmethode ('firls' oder 'firwin2')
+        'fs': 48000,                     # Sampling frequency
+        'fir_taps': 255,                 # Filter Ordnung
+        'design_method': 'firls',        # Designmethode ('firls' oder 'firwin2')
         'bandpass_type': 'butterworth',  # Typ des Bandpass ('butterworth' oder 'null' für keinen Bandpass)
         'bandpass_params':
             {
-                'lowcut_freq': 125,  # Untere Bandpass-Grenze
+                'lowcut_freq': 125,     # Untere Bandpass-Grenze
                 'highcut_freq': 20000,  # Obere Bandpass-Grenze,
-                'lowcut_order': 4,  # Ordnung des Lowcuts (untere Flanke des Bandbass)
-                'highcut_order': 2,  # Ordnung des Highcuts (obere Flanke des Bandbass)
+                'lowcut_order': 4,      # Ordnung des Lowcuts (untere Flanke des Bandbass)
+                'highcut_order': 2,     # Ordnung des Highcuts (obere Flanke des Bandbass)
             },
-        'smoothing_type': 'erb',  # Art Glättung ('octave', 'erb', oder 'null' für keine Glättung)
+        'smoothing_type': 'erb',  # Art der Glättung ('octave', 'erb', oder 'null' für keine Glättung)
         'smoothing_params':
             {
-                'fraction': 3  # 1/3 Oktavbandglättung
+            },
+        'inverse_method': 'tikhonov',  # Methode zur Berechnung des inversen Amplitudengangs (mit Regularization)
+        'inverse_params':
+            {
+                'beta': 0.1,                  # Dämpfungsfaktor
+                'b_filter_type': 'highpass',  # frequenzabhängige Dämpfungsfunktion ('highpass' oder 'lowpass')
+                'cutoff_hz': 8000,            # Grenzfrequenz
+                'order': 2,                   # Filterordnung
+                'fs': 48000                   # Abtastrate
             }
     }
 
