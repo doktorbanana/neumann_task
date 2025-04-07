@@ -17,7 +17,7 @@ class ResponsePlotter:
         plt.figure(figsize=(12, 6))
         plt.semilogx(frequencies, original_db, label='Original Measurement')
         plt.semilogx(frequencies, smoothed_db, label='Smoothed Measurement')
-        plt.semilogx(frequencies, inverse_db, label='Inverse (with Regularization)', linestyle='--')
+        plt.semilogx(frequencies, inverse_db, label='Target Filter Response (Regularization & Masking)', linestyle='--')
         plt.semilogx(frequencies, equalized_db, label='Equalized')
         plt.xlim(20, 20000)
         plt.xlabel('Frequency (Hz)')

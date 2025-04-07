@@ -7,6 +7,12 @@ Klassen:
 - FractionalOctaveSmoother: Smoothing in Oktavbändern (zB 1/3 OKtavbänder)
 - ERBSmoother: Smoothing in Equivalent Rectangular Bandwidths
 - CurveSmootherFactory: Erzeugt CurveSmoother-Instanzen
+
+- INotchMasker: Interface für Notch-Detection und -Masking
+- NullMasker: keine Notch-Detection
+- ProminenceNotchMasker: Notch-Detection basiert auf Prominence der Notches
+- NotchMaskerFactory: Erzeugt INotchMasker Instanzen
+
 - IInverseCurveCalculator: Interface für Methoden zur Berechnung der inversen Übertragungsfunktion
 - SimpleInverseCurveCalculator: Berechnung mit einfacher Regularization
 - TikhonovInverseCalculator: Berechnung mit Tikhonov-Regularization
@@ -17,7 +23,8 @@ Konzepte:
 - Zur Vermeidung von unerwünschter Frequenzüberhöhung im hochfrequenten Bereich wird Regularisierung genutzt
 """
 import numpy as np
-from scipy.signal import butter, sosfreqz
+import math
+from scipy.signal import butter, sosfreqz, find_peaks, peak_widths
 from abc import ABC, abstractmethod
 
 
@@ -81,7 +88,7 @@ class ERBSmoother(ICurveSmoother):
 
 
 class CurveSmootherFactory:
-
+    """ Erzeugt den passenden Smoother für den gegebenen Tag"""
     _types = {
         'null': NullSmoother,
         "octave": FractionalOctaveSmoother,
@@ -107,7 +114,110 @@ class CurveSmootherFactory:
 
         return smoother
 
+# ---------------------------- Notch Masking ----------------------------
 
+class INotchMasker(ABC):
+    """ Abstrakte Schnittstelle für Notch-Detection und -Masking"""
+    @abstractmethod
+    def apply_notch_mask(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+        pass
+
+
+class NullMasker(INotchMasker):
+    """ Konkrete Implementierung für 'keine Notch-Detection' """
+    def __int__(self):
+        pass
+
+    def apply_notch_mask(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+        pass
+
+
+class PromNotchMasker(INotchMasker):
+    """ Automatische Notch-Detection und -Masking basierend auf Prominenzanalyse der gemessenen Übertragungsfunktion"""
+    def __init__(self, attenuation_db: float=10.0, min_depth_db: float=6.0, prominence: float=3.0, rel_height: float=0.5, smooth_fraction: int=12):
+        self.attenuation_db = attenuation_db
+        self.min_depth_db = min_depth_db
+        self.prominence = prominence
+        self.rel_height = rel_height
+        self.smooth_fraction = smooth_fraction
+
+    def _detect_notches(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+        """Notch-Detection basierend auf Prominenzanalyse"""
+
+        # 1. Glättung
+        _smoother = CurveSmootherFactory.get_smoother(
+            {
+                'smoothing_type': 'octave',
+                'smoothing_params':{'fraction': self.smooth_fraction}
+            })
+
+        smoothed_db = _smoother.smooth(frequencies, magnitudes)
+
+        # 2. Berechnung der Tiefe relativ zur geglätteten Kurve
+        depth = smoothed_db - magnitudes  # Positive Werte = Notches
+
+        # 3. Finde Notches mit ausreichender Tiefe und Prominenz
+        notches, props = find_peaks(
+            depth,
+            height=self.min_depth_db,
+            prominence=self.prominence,
+            width=1,                        # Mindestbreite: 1 Frequencybin
+            rel_height=self.rel_height
+        )
+
+        # 4. Bestimme Maskierungsbereiche
+        mask = np.ones_like(frequencies, dtype=bool)
+
+        for i, f_center in enumerate(notches):
+            start = max(0, math.floor(props['left_ips'][i]))
+            end = min(len(frequencies), math.ceil(props['right_ips'][i]))
+            mask[start:end] = False
+
+        return mask
+
+    def apply_notch_mask(self,
+                         frequencies: np.ndarray,
+                         magnitudes: np.ndarray,
+                         ) -> np.ndarray:
+        """ """
+        mask = self._detect_notches(frequencies, magnitudes)
+
+        # Verstärkung in den Notch-Bereichen (= Auffüllen der Notches)
+        gain = 10 ** (-self.attenuation_db / 20)
+        masked_magnitudes = np.where(mask, magnitudes, magnitudes * gain)
+        return masked_magnitudes
+
+
+class NotchMaskerFactory:
+    """Erzeugt den passenden Bandpass für gegebenen Typ"""
+
+    _types = {
+        'null': NullMasker,
+        'prominence': PromNotchMasker
+    }
+
+    @classmethod
+    def get_masker(cls, config) -> INotchMasker:
+        masker_type = config['notch_masking_type'].lower()
+        masker_class = cls._types.get(masker_type)
+        if not masker_class:
+            raise ValueError(f"Unsupported type: {masker_type}. Available: {list(cls._types.keys())}")
+
+        # Instanziieren mit benötigten Parametern
+        constructor_args = {
+            'prominence': {
+                'attenuation_db': config['notch_masking_params']['attenuation_db'],
+                'min_depth_db': config['notch_masking_params']['min_depth_db'],
+                'prominence': config['notch_masking_params']['prominence'],
+                'rel_height': config['notch_masking_params']['rel_height'],
+                'smooth_fraction': config['notch_masking_params']['smooth_fraction']
+            },
+            'null': {}
+        }
+
+        masker = masker_class(**constructor_args.get(masker_type, {}))
+
+        return masker
 # ---------------------------- Inverse Curve Calculation ----------------------------
 class IInverseCurveCalculator(ABC):
     """Abstrakte Schnittstelle für alle Inversionsmethoden"""
