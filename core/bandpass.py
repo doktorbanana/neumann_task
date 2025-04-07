@@ -77,7 +77,6 @@ class ButterworthBandpass(IBandpassFilter):
 
 class BandpassFactory:
     """Erzeugt den passenden Bandpass für gegebenen Typ"""
-    
     _types = {
         'null': NullBandpass,
         'butterworth': ButterworthBandpass
