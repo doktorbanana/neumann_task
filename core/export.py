@@ -2,7 +2,7 @@
 Exportkomponenten - Persistierung der Filterkoeffizienten
 
 Klassen:
-- IFilterExporter: Interface für verschiedene Exportfunktionalität nach Dateiformat
+- IFilterExporter: Interface für Export nach Dateiformat
 - WavExporter: 32-bit Float WAV Format
 - FilterExporter: Zentrale Exportroutine mit automatischer Formatdetektion
 

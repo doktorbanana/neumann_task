@@ -7,7 +7,8 @@ Klassen:
 - TargetCurveDesigner: Kombiniert Kurve mit Bandpass-Eigenschaften
 
 Konzepte:
-- Ermöglicht nicht-lineare Erweiterungen durch neue ITargetCurve-Implementierungen
+- Ermöglicht nicht-lineare Erweiterungen durch neue
+    ITargetCurve-Implementierungen
 """
 
 import numpy as np
@@ -30,7 +31,7 @@ class FlatTargetCurve(ITargetCurve):
     def get_curve(self, frequencies: np.ndarray) -> np.ndarray:
         return np.ones_like(frequencies)
 
-# ---------------------------- Target Curve Designer ----------------------------
+# --------------------------- Target Curve Designer ---------------------------
 
 
 class TargetCurveDesigner:

@@ -3,7 +3,7 @@ Datenverwaltung - Einlesen und Validierung von Messdaten
 
 Klassen:
 - SpectrumData: Datencontainer
-- ISpectrumDataLoader: Interface für verschiedene Ladefunktionalitäten je nach Dateiformat
+- ISpectrumDataLoader: Interface für Ladefunktionen je nach Dateiformat
 - DataLoaderFactory: Zentrale Zugriffskomponente
 
 Funktionen:
@@ -39,6 +39,7 @@ class ISpectrumDataLoader(ABC):
         """Lädt Spektrum aus der Datei"""
         pass
 
+
 class JsonSpectrumDataLoader(ISpectrumDataLoader):
     """Lädt Daten aus JSON-Dateien"""
 
@@ -70,4 +71,3 @@ class DataLoaderFactory:
             if loader.supports_format(file_path):
                 return loader
         raise ValueError(f"Unsupported file format: {file_path}")
-

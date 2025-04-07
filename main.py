@@ -17,11 +17,12 @@ Das ist auch in den vorliegenden Messdaten erkennbar. Daher wurde für den Lowcu
 Im hochfrequenten Bereich ist der Roll-Off in der Regel flacher. Daher wurde ein Highcut-Filter
 zweiter Ordnung gewählt.
 
-Automatische Notch-Detektion:
+Automatische Notch-Detektion und Auffüllen der Notches:
 Um Nullstellen in der Übertragungsfunktion des Lautsprechers zu finden, wurde eine automatische Notch-Detection
 implementiert. In den Beispieldaten wird ein Notch bei 11kHz erkannt und für das Design des Filters ignoriert.
 Die Detection basiert auf einem Vergleich mit einer 1/3-Oktavband geglätteten Version der Übertragungsfunktion.
 An Stellen, an denen die geglättete Kurve deutlich unter dem Original liegt, liegt ein schmalbandiger Notch vor.
+Dieser Notch wird dann 'aufgefüllt', d.h. die es wird verstärkt (10dB).
 
 Regularisierung:
 Mit der Tikhonov-Methode wird der Dämpfungsterm β·B(ω)² hinzugefügt, wobei B(ω) einem Hochpassfilter
@@ -78,16 +79,16 @@ if __name__ == "__main__":
         'smoothing_params':
             {
             },
-        'inverse_method': 'tikhonov',  # Methode zur Berechnung des inversen Amplitudengangs (mit Regularization)
+        'inverse_method': 'tikhonov',  # Methode zur Berechnung des inversen Amplitudengangs ('simple' oder 'tikhonov')
         'inverse_params':
             {
-                'beta': 0.1,                  # Dämpfungsfaktor
-                'b_filter_type': 'highpass',  # frequenzabhängige Dämpfungsfunktion ('highpass' oder 'lowpass')
-                'cutoff_hz': 8000,            # Grenzfrequenz
-                'order': 2,                   # Filterordnung
-                'fs': 48000                   # Abtastrate
+                'beta': 0.1,                    # Dämpfungsfaktor
+                'b_filter_type': 'highpass',    # frequenzabhängige Dämpfungsfunktion ('highpass' oder 'lowpass')
+                'cutoff_hz': 8000,              # Grenzfrequenz
+                'order': 2,                     # Filterordnung
+                'fs': 48000                     # Abtastrate
             },
-        'notch_masking_type': 'prominence',
+        'notch_masking_type': 'prominence',     # Methode für Notch-Detection und -Masking ('null' oder 'prominence')
         'notch_masking_params':
             {
                 'attenuation_db': 10.0,         # Wie stark sollen die Notches aufgefüllt werden

@@ -41,12 +41,18 @@ class NullBandpass(IBandpassFilter):
 
 class ButterworthBandpass(IBandpassFilter):
     """Konkrete Butterworth-Implementierung"""
-    def __init__(self, fs: int, lowcut_freq: int, highcut_freq: int, lowcut_order: int, highcut_order: int):
-
+    def __init__(self,
+                 fs: int,
+                 lowcut_freq: int,
+                 highcut_freq: int,
+                 lowcut_order: int,
+                 highcut_order: int
+                 ):
         self.fs = fs
 
         if lowcut_freq >= highcut_freq:
-            raise ValueError("Highcut frequency must be above Lowcut frequency")
+            err_msg = "Highcut frequency must be above Lowcut frequency"
+            raise ValueError(err_msg)
 
         self.highcut_sos = butter(
             N=highcut_order,
@@ -68,6 +74,7 @@ class ButterworthBandpass(IBandpassFilter):
 
         return np.abs(highcut_h * lowcut_h)
 
+
 class BandpassFactory:
     """Erzeugt den passenden Bandpass für gegebenen Typ"""
     
@@ -78,11 +85,13 @@ class BandpassFactory:
 
     @classmethod
     def get_bandpass(cls, config) -> IBandpassFilter:
-
         bandpass_type = config['bandpass_type'].lower()
         bandpass_class = cls._types.get(bandpass_type)
         if not bandpass_class:
-            raise ValueError(f"Unsupported type: {bandpass_type}. Available: {list(cls._types.keys())}")
+            raise ValueError(
+                f"Unsupported type: {bandpass_type}. "
+                f"Available: {list(cls._types.keys())}"
+            )
 
         # Instanziieren mit benötigten Parametern
         constructor_args = {
@@ -90,8 +99,10 @@ class BandpassFactory:
                 'fs': config['fs'],
                 'lowcut_freq': config['bandpass_params']['lowcut_freq'],
                 'highcut_freq': config['bandpass_params']['highcut_freq'],
-                'lowcut_order': config['bandpass_params'].get('lowcut_order', 4),
-                'highcut_order': config['bandpass_params'].get('highcut_order', 2)
+                'lowcut_order':
+                    config['bandpass_params'].get('lowcut_order', 4),
+                'highcut_order':
+                    config['bandpass_params'].get('highcut_order', 2)
             },
             'null': {}
         }

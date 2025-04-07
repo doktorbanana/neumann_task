@@ -13,18 +13,21 @@ Klassen:
 - ProminenceNotchMasker: Notch-Detection basiert auf Prominence der Notches
 - NotchMaskerFactory: Erzeugt INotchMasker Instanzen
 
-- IInverseCurveCalculator: Interface für Methoden zur Berechnung der inversen Übertragungsfunktion
+- IInverseCurveCalculator: Interface für Methoden zur Berechnung der inversen
+    Übertragungsfunktion
 - SimpleInverseCurveCalculator: Berechnung mit einfacher Regularization
 - TikhonovInverseCalculator: Berechnung mit Tikhonov-Regularization
 - InverseCurveCalculatorFactory: Erzeugt InverseCurveCalculator-Instanzen
 
 Konzepte:
-- Glättung der Messdaten ist psycho-akustisch motiviert: 1/3 Oktavband oder ERB-Skala
-- Zur Vermeidung von unerwünschter Frequenzüberhöhung im hochfrequenten Bereich wird Regularisierung genutzt
+- Glättung der Messdaten ist psycho-akustisch motiviert: 1/3 Oktavband oder
+    ERB-Skala
+- Zur Vermeidung von unerwünschter Frequenzüberhöhung im hochfrequenten
+    Bereich wird Regularisierung genutzt
 """
 import numpy as np
 import math
-from scipy.signal import butter, sosfreqz, find_peaks, peak_widths
+from scipy.signal import butter, sosfreqz, find_peaks
 from abc import ABC, abstractmethod
 
 
@@ -33,7 +36,9 @@ class ICurveSmoother(ABC):
     """Abstrakte Schnittstelle für die Glättung einer Impulsantwort"""
 
     @abstractmethod
-    def smooth(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def smooth(self,
+               frequencies: np.ndarray,
+               magnitudes: np.ndarray) -> np.ndarray:
         """Glättet den Amplitudengang einer Impulsantwort"""
         pass
 
@@ -43,7 +48,9 @@ class NullSmoother(ICurveSmoother):
     def __init__(self):
         pass
 
-    def smooth(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def smooth(self,
+               frequencies: np.ndarray,
+               magnitudes: np.ndarray) -> np.ndarray:
         return magnitudes  # Keine Modifikation
 
 
@@ -51,10 +58,12 @@ class FractionalOctaveSmoother(ICurveSmoother):
     def __init__(self, fraction: int = 3):
         self.fraction = fraction
 
-    def smooth(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
-        """ Führt eine fraktionale Oktavbandglättung durch (z. B. 1/3-Oktave) """
+    def smooth(self,
+               frequencies: np.ndarray,
+               magnitudes: np.ndarray) -> np.ndarray:
+        """ Führt eine fraktionale Oktavbandglättung durch (zB 1/3-Oktave) """
 
-        smoothed_magnitudes = np.zeros_like(magnitudes)
+        smoothed_magnitudes = np.zeros_like(magnitudes)  # type: np.ndarray
 
         # Berechnung der Grenzfrequenzen
         fd = np.sqrt(2) ** (1 / self.fraction)
@@ -76,12 +85,14 @@ class ERBSmoother(ICurveSmoother):
     def __int__(self):
         pass
 
-    def smooth(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def smooth(self,
+               frequencies: np.ndarray,
+               magnitudes: np.ndarray) -> np.ndarray:
         erb_bandwidths = 24.7 * ((4.37 * frequencies/1000) + 1)
-        smoothed_magnitudes = np.zeros_like(magnitudes)
+        smoothed_magnitudes = np.zeros_like(magnitudes)  # type: np.ndarray
 
-        for i, (f_center, bw) in enumerate(zip(frequencies, erb_bandwidths)):
-            mask = (frequencies >= f_center - bw/2) & (frequencies <= f_center + bw/2)
+        for i, (f_c, bw) in enumerate(zip(frequencies, erb_bandwidths)):
+            mask = (frequencies >= f_c - bw/2) & (frequencies <= f_c + bw/2)
             smoothed_magnitudes[i] = np.mean(magnitudes[mask])
 
         return smoothed_magnitudes
@@ -101,11 +112,15 @@ class CurveSmootherFactory:
         smoother_type = config['smoothing_type'].lower()
         smoother_class = cls._types.get(smoother_type)
         if not smoother_class:
-            raise ValueError(f"Unsupported type: {smoother_type}. Available: {list(cls._types.keys())}")
+            raise ValueError(f"Unsupported type: {smoother_type}. "
+                             f"Available: {list(cls._types.keys())}")
 
         # Instanziieren mit benötigten Parametern
         constructor_args = {
-            'octave': {'fraction': config.get('smoothing_params').get('fraction')},
+            'octave':
+                {
+                    'fraction': config.get('smoothing_params').get('fraction')
+                },
             'erb': {},
             'null': {}
         }
@@ -116,10 +131,13 @@ class CurveSmootherFactory:
 
 # ---------------------------- Notch Masking ----------------------------
 
+
 class INotchMasker(ABC):
     """ Abstrakte Schnittstelle für Notch-Detection und -Masking"""
     @abstractmethod
-    def apply_notch_mask(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def apply_notch_mask(self,
+                         frequencies: np.ndarray,
+                         magnitudes: np.ndarray) -> np.ndarray:
         pass
 
 
@@ -128,27 +146,37 @@ class NullMasker(INotchMasker):
     def __int__(self):
         pass
 
-    def apply_notch_mask(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def apply_notch_mask(self,
+                         frequencies: np.ndarray,
+                         magnitudes: np.ndarray) -> np.ndarray:
         pass
 
 
 class PromNotchMasker(INotchMasker):
-    """ Automatische Notch-Detection und -Masking basierend auf Prominenzanalyse der gemessenen Übertragungsfunktion"""
-    def __init__(self, attenuation_db: float=10.0, min_depth_db: float=6.0, prominence: float=3.0, rel_height: float=0.5, smooth_fraction: int=12):
+    """ Automatische Notch-Detection und -Masking
+    basierend auf Prominenzanalyse der gemessenen Übertragungsfunktion"""
+    def __init__(self,
+                 attenuation_db: float = 10.0,
+                 min_depth_db: float = 6.0,
+                 prominence: float = 3.0,
+                 rel_height: float = 0.5,
+                 smooth_fraction: int = 12):
         self.attenuation_db = attenuation_db
         self.min_depth_db = min_depth_db
         self.prominence = prominence
         self.rel_height = rel_height
         self.smooth_fraction = smooth_fraction
 
-    def _detect_notches(self, frequencies: np.ndarray, magnitudes: np.ndarray) -> np.ndarray:
+    def _detect_notches(self,
+                        frequencies: np.ndarray,
+                        magnitudes: np.ndarray) -> np.ndarray:
         """Notch-Detection basierend auf Prominenzanalyse"""
 
         # 1. Glättung
         _smoother = CurveSmootherFactory.get_smoother(
             {
                 'smoothing_type': 'octave',
-                'smoothing_params':{'fraction': self.smooth_fraction}
+                'smoothing_params': {'fraction': self.smooth_fraction}
             })
 
         smoothed_db = _smoother.smooth(frequencies, magnitudes)
@@ -168,7 +196,7 @@ class PromNotchMasker(INotchMasker):
         # 4. Bestimme Maskierungsbereiche
         mask = np.ones_like(frequencies, dtype=bool)
 
-        for i, f_center in enumerate(notches):
+        for i, f_center in np.ndenumerate(notches):
             start = max(0, math.floor(props['left_ips'][i]))
             end = min(len(frequencies), math.ceil(props['right_ips'][i]))
             mask[start:end] = False
@@ -201,16 +229,22 @@ class NotchMaskerFactory:
         masker_type = config['notch_masking_type'].lower()
         masker_class = cls._types.get(masker_type)
         if not masker_class:
-            raise ValueError(f"Unsupported type: {masker_type}. Available: {list(cls._types.keys())}")
+            raise ValueError(f"Unsupported type: {masker_type}. "
+                             f"Available: {list(cls._types.keys())}")
 
         # Instanziieren mit benötigten Parametern
         constructor_args = {
             'prominence': {
-                'attenuation_db': config['notch_masking_params']['attenuation_db'],
-                'min_depth_db': config['notch_masking_params']['min_depth_db'],
-                'prominence': config['notch_masking_params']['prominence'],
-                'rel_height': config['notch_masking_params']['rel_height'],
-                'smooth_fraction': config['notch_masking_params']['smooth_fraction']
+                'attenuation_db':
+                    config['notch_masking_params']['attenuation_db'],
+                'min_depth_db':
+                    config['notch_masking_params']['min_depth_db'],
+                'prominence':
+                    config['notch_masking_params']['prominence'],
+                'rel_height':
+                    config['notch_masking_params']['rel_height'],
+                'smooth_fraction':
+                    config['notch_masking_params']['smooth_fraction']
             },
             'null': {}
         }
@@ -218,7 +252,9 @@ class NotchMaskerFactory:
         masker = masker_class(**constructor_args.get(masker_type, {}))
 
         return masker
-# ---------------------------- Inverse Curve Calculation ----------------------------
+# ------------------------- Inverse Curve Calculation -------------------------
+
+
 class IInverseCurveCalculator(ABC):
     """Abstrakte Schnittstelle für alle Inversionsmethoden"""
 
@@ -248,7 +284,9 @@ class TikhonovInverseCalculator(IInverseCurveCalculator):
         beta = params.get('beta', 1e-2)
 
         # Filter für B(w) erstellen
-        filter_design = RegularizationFilterFactory.get_filter(params.get('b_filter_type', 'highpass'))
+        filter_design = RegularizationFilterFactory.get_filter(
+            params.get('b_filter_type', 'highpass')
+        )
         b_weight = filter_design.get_weight(frequencies, **params)
         regularization = beta * b_weight
         return target_mag / (measured_lin + regularization + 1e-10)
@@ -266,10 +304,12 @@ class InverseCurveCalculatorFactory:
     def get_calculator(cls, method: str) -> IInverseCurveCalculator:
         calculator_class = cls._methods.get(method.lower())
         if not calculator_class:
-            raise ValueError(f"Unsupported inverse method: {method}. Available: {list(cls._methods.keys())}")
+            raise ValueError(f"Unsupported inverse method: {method}. "
+                             f"Available: {list(cls._methods.keys())}")
         return calculator_class()
 
-# ---------------------------- Berechnung der Regularisierungsfunktion ----------------------------
+# ------------------ Berechnung der Regularisierungsfunktion ------------------
+
 
 class IRegularizationFilterDesign(ABC):
     """Abstrakte Schnittstelle für Regularisierungsfilter"""
@@ -320,4 +360,6 @@ class RegularizationFilterFactory:
 
     @classmethod
     def get_filter(cls, filter_type: str) -> IRegularizationFilterDesign:
-        return cls._types.get(filter_type.lower(), HighpassRegularizationFilter)()
+        return cls._types.get(
+            filter_type.lower(),
+            HighpassRegularizationFilter)()

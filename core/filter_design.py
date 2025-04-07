@@ -8,9 +8,11 @@ Klassen:
 - FilterDesignerFactory: Zentraler Zugriff auf Designmethoden
 
 Konzepte:
-- Firls: Minimiert mittlere quadratische Abweichung. Liefert bessere Ergebnisse bei höherer Rechenlast.
+- Firls: Minimiert mittlere quadratische Abweichung. Liefert bessere
+    Ergebnisse bei höherer Rechenlast.
 - Firwin2: Ideale Filterantwort + Fensterung
-- Da der Filter offline erstellt wird und nicht in real-time angepasst werden muss, wird die Firls-Methode verwendet.
+- Da der Filter offline erstellt wird und nicht in real-time
+    angepasst werden muss, wird die Firls-Methode verwendet.
 """
 
 import numpy as np
@@ -23,7 +25,11 @@ class IFilterDesigner(ABC):
     """Abstrakte Schnittstelle für Filterdesigner"""
 
     @abstractmethod
-    def design(self, frequencies: np.ndarray, response: np.ndarray, fs: int, numtaps: int) -> np.ndarray:
+    def design(self,
+               frequencies: np.ndarray,
+               response: np.ndarray,
+               fs: int,
+               numtaps: int) -> np.ndarray:
         """ Erzeugt Filterkoeffizienten"""
         pass
 
@@ -31,7 +37,11 @@ class IFilterDesigner(ABC):
 class FirlsDesigner(IFilterDesigner):
     """FIR-Filterdesign mit Least Squared Error Methode"""
 
-    def design(self, frequencies: np.ndarray, response: np.ndarray, fs: int, numtaps: int) -> np.ndarray:
+    def design(self,
+               frequencies: np.ndarray,
+               response: np.ndarray,
+               fs: int,
+               numtaps: int) -> np.ndarray:
         nyq = 0.5 * fs
         normalized_freq = frequencies / nyq
         bands = np.repeat(frequencies / nyq, 2)[1:-1]
@@ -69,5 +79,6 @@ class FilterDesignerFactory:
     def get_designer(cls, method: str) -> IFilterDesigner:
         designer = cls._methods.get(method.lower())
         if not designer:
-            raise ValueError(f"Unsupported method: {method}. Available: {list(cls._methods.keys())}")
+            raise ValueError(f"Unsupported method: {method}. "
+                             f"Available: {list(cls._methods.keys())}")
         return designer
