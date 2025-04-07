@@ -90,11 +90,12 @@ if __name__ == "__main__":
         # Glättungsparameter
         'smoothing_type': 'erb',
         # Glättungsmethode: 'octave', 'erb' oder 'null'
-        'smoothing_params': {  # Zusatzparameter für Glättung
+        'smoothing_params': {
+            'fraction': 3  # Zusatzparameter für Glättung
         },
 
         # Inversionsparameter
-        'inverse_method': 'tikhonov',  # 'tikhonov' oder 'compare_squeeze'
+        'inverse_method': 'tikhonov',  # 'tikhonov' oder 'simple'
         'inverse_params': {
             'beta': 0.1,  # Tikhonov-Dämpfungsfaktor (0.01-1.0)
             'b_filter_type': 'highpass',

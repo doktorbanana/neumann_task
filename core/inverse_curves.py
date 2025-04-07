@@ -82,7 +82,7 @@ class FractionalOctaveSmoother(ICurveSmoother):
 class ERBSmoother(ICurveSmoother):
     """Equivalent Rectangular Bandwidth Glättung nach Moore & Glasberg"""
 
-    def __int__(self):
+    def __init__(self):
         pass
 
     def smooth(self,
@@ -149,7 +149,7 @@ class NullMasker(INotchMasker):
     def apply_notch_mask(self,
                          frequencies: np.ndarray,
                          magnitudes: np.ndarray) -> np.ndarray:
-        pass
+        return magnitudes
 
 
 class PromNotchMasker(INotchMasker):
@@ -207,7 +207,7 @@ class PromNotchMasker(INotchMasker):
                          frequencies: np.ndarray,
                          magnitudes: np.ndarray,
                          ) -> np.ndarray:
-        """ """
+        """Maskiert Notches in der Übertragungsfunktion"""
         mask = self._detect_notches(frequencies, magnitudes)
 
         # Verstärkung in den Notch-Bereichen (= Auffüllen der Notches)
