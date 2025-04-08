@@ -143,7 +143,7 @@ class INotchMasker(ABC):
 
 class NullMasker(INotchMasker):
     """ Konkrete Implementierung für 'keine Notch-Detection' """
-    def __int__(self):
+    def __init__(self):
         pass
 
     def apply_notch_mask(self,

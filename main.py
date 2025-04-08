@@ -110,8 +110,8 @@ if __name__ == "__main__":
         'notch_masking_params': {
             'attenuation_db': 10.0,  # Dämpfung in Notch-Bereichen
             'min_depth_db': 6.0,  # Mindest-Notchtiefe zur Detektion
-            'prominence': 3.0,  # Relative Prominenz zur Peakerkennung
-            'rel_height': 0.5,  # Relative Höhe für Breitenberechnung
+            'prominence': 3.0,  # Relative Prominenz zur Detektion
+            'rel_height': 0.5,  # Relative Höhe für Breitenberechnung der Maskierung
             'smooth_fraction': 3
             # Glättungsstärke (1=1/1 Oktave, 3=1/3 Oktave)
         }
